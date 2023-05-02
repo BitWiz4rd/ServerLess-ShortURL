@@ -1,0 +1,5 @@
+{
+  "BUCKET": "short-isarria-shorten",
+  "REGION": "eu-west-3",
+  "STAGE": "dev"
+}

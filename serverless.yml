@@ -1,0 +1,59 @@
+service: serverless-url-shortener
+provider:
+  name: aws
+  runtime: nodejs16.x
+  stage: ${file(config.json):STAGE}
+  region: eu-west-2
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:PutObject
+      Resource: "arn:aws:s3:::short-isarria-shorten/*"
+functions:
+  store:
+    handler: api.handle
+    events:
+      - http:
+          path: /
+          method: post
+          cors: false
+resources:
+  Resources:
+    ServerlessRedirectS3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: short-isarria-shorten
+        ### No more AccessControl
+        # AccessControl: PublicRead
+        ###  replace it with...
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+        OwnershipControls:
+          Rules:
+            - ObjectOwnership: ObjectWriter
+        ###
+        WebsiteConfiguration:
+          IndexDocument: index.html
+    ServerlessRedirectS3BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: short-isarria-shorten
+        PolicyDocument:
+          Statement:
+            - Action:
+                - s3:GetObject
+              Effect: Allow
+              Resource:
+                - arn:aws:s3:::short-isarria-shorten/*
+              Principal: "*"
+    PublicReadS3BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: short-isarria-shorten
+        PolicyDocument:
+          Statement:
+            - Action:
+                - s3:GetObject
+              Effect: Allow
+              Resource: arn:aws:s3:::short-isarria-shorten/*
+              Principal: "*"
