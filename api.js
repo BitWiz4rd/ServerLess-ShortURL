@@ -10,7 +10,7 @@ const S3 = new AWS.S3({
 var config = new AWS.Config({
   accessKeyId: process.env.ACCESS_KEY_ID,
   secretAccessKey: process.env.ACCESS_SECRET_KEY,
-  region: 'us-west-2',
+  region: 'us-west-3',
   Bucket: process.env.BUCKET_NAME
 });
 
