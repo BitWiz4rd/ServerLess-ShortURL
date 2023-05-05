@@ -3,5 +3,8 @@
   "scripts": {},
   "dependencies": {
     "aws-sdk": "^2.1369.0"
+  },
+  "devDependencies": {
+    "serverless-dotenv-plugin": "^6.0.0"
   }
 }
