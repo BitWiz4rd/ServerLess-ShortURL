@@ -1,59 +1,67 @@
-service: serverless-url-shortener
+# API S3 Bucket Creation
+service: api-${file(config.json):BUCKET}
+plugins:
+  - serverless-dotenv-plugin
 provider:
+  environment:
+  # Runtime
   name: aws
   runtime: nodejs16.x
+
+  # Stage DEV/PROD
   stage: ${file(config.json):STAGE}
-  region: eu-west-2
+
+  # Region Paris
+  region: eu-west-3 
+
+  # API IAM Roles allow PutObject
   iamRoleStatements:
     - Effect: Allow
       Action:
         - s3:PutObject
-      Resource: "arn:aws:s3:::short-isarria-shorten/*"
+      Resource: "arn:aws:s3:::${file(config.json):BUCKET}/*"
+
+# Define NodeJS function to run
 functions:
+
+  # We define a function called "store"
   store:
+    # Where function with name "handle" will run
     handler: api.handle
+
+    # Configure POST event
     events:
       - http:
           path: /
           method: post
           cors: false
+
+# Configure Frontend S3 Bucket
 resources:
   Resources:
-    ServerlessRedirectS3Bucket:
+
+    # Frontend S3 Bucket Creation
+    FrontendS3Bucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: short-isarria-shorten
-        ### No more AccessControl
-        # AccessControl: PublicRead
-        ###  replace it with...
+        BucketName: s2-isarria-dev
         PublicAccessBlockConfiguration:
           BlockPublicAcls: false
         OwnershipControls:
           Rules:
             - ObjectOwnership: ObjectWriter
-        ###
         WebsiteConfiguration:
           IndexDocument: index.html
-    ServerlessRedirectS3BucketPolicy:
+
+    # Frontend S3 Bucket Policy
+    FrontendS3BucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
-        Bucket: short-isarria-shorten
+        Bucket: ${file(config.json):BUCKET}
         PolicyDocument:
           Statement:
             - Action:
                 - s3:GetObject
               Effect: Allow
-              Resource:
-                - arn:aws:s3:::short-isarria-shorten/*
-              Principal: "*"
-    PublicReadS3BucketPolicy:
-      Type: AWS::S3::BucketPolicy
-      Properties:
-        Bucket: short-isarria-shorten
-        PolicyDocument:
-          Statement:
-            - Action:
-                - s3:GetObject
-              Effect: Allow
-              Resource: arn:aws:s3:::short-isarria-shorten/*
+              Resource: arn:aws:s3:::${file(config.json):BUCKET}/*
               Principal: "*"
